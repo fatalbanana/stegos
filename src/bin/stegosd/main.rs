@@ -541,6 +541,7 @@ fn run() -> Result<(), Error> {
         Hash::digest(&genesis)
     );
     let timestamp = Timestamp::now();
+    let genesis_hash = Hash::digest(&genesis.header);
     let chain = Blockchain::new(
         chain_cfg.clone(),
         &chain_dir,
@@ -570,7 +571,8 @@ fn run() -> Result<(), Error> {
         network.clone(),
         node.clone(),
         rt.executor(),
-        chain_cfg.stake_epochs,
+        genesis_hash,
+        chain_cfg,
         cfg.node.max_inputs_in_tx,
         epoch,
     )?;
