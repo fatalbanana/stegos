@@ -34,7 +34,7 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::collections::HashMap;
 use std::time::Duration;
-use stegos_blockchain::{Block, Blockchain};
+use stegos_blockchain::{Block, BlockReader};
 use stegos_network::{Network, PeerId, ReplicationEvent};
 use tokio_timer::{clock, Delay};
 
@@ -136,7 +136,13 @@ impl Replication {
     ///
     /// Polls events.
     ///
-    pub(super) fn poll(&mut self, chain: &Blockchain) -> Async<Option<Vec<Block>>> {
+    pub(super) fn poll(
+        &mut self,
+        current_epoch: u64,
+        current_offset: u32,
+        micro_blocks_in_epoch: u32,
+        block_reader: &dyn BlockReader,
+    ) -> Async<Option<Vec<Block>>> {
         trace!("Poll");
 
         // Process replication events.
@@ -158,7 +164,7 @@ impl Replication {
                     ReplicationEvent::Connected { peer_id, rx, tx } => {
                         assert_ne!(peer_id, self.peer_id);
                         let peer = self.peers.get_mut(&peer_id).expect("peer is known");
-                        peer.connected(chain.epoch(), chain.offset(), rx, tx);
+                        peer.connected(current_epoch, current_offset, rx, tx);
                     }
                     ReplicationEvent::Accepted { peer_id, rx, tx } => {
                         assert_ne!(peer_id, self.peer_id);
@@ -182,7 +188,12 @@ impl Replication {
 
         let mut has_upstream = false;
         for (_peer_id, peer) in self.peers.iter_mut() {
-            match peer.poll(chain) {
+            match peer.poll(
+                current_epoch,
+                current_offset,
+                micro_blocks_in_epoch,
+                block_reader,
+            ) {
                 Async::Ready(blocks) => {
                     return Async::Ready(Some(blocks));
                 }

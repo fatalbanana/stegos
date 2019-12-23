@@ -2415,7 +2415,14 @@ impl Future for NodeService {
         }
         // Replication
         loop {
-            match self.replication.poll(&self.chain) {
+            let micro_blocks_in_epoch = self.chain.cfg().micro_blocks_in_epoch;
+            let block_reader: &dyn BlockReader = &self.chain;
+            match self.replication.poll(
+                self.chain.epoch(),
+                self.chain.offset(),
+                micro_blocks_in_epoch,
+                block_reader,
+            ) {
                 Async::Ready(Some(blocks)) => {
                     for block in blocks {
                         if let Err(e) = self.handle_block(block) {
