@@ -52,7 +52,6 @@ use stegos_crypto::hash::Hash;
 use stegos_keychain::keyfile::load_network_keys;
 use stegos_network::{Libp2pNetwork, NETWORK_STATUS_TOPIC};
 use stegos_node::NodeService;
-use stegos_wallet::WalletService;
 use tokio::runtime::Runtime;
 use tokio_timer::clock;
 
@@ -563,21 +562,6 @@ fn run() -> Result<(), Error> {
         replication_rx,
     )?;
 
-    // Initialize Wallet.
-    let (wallet_service, wallet) = WalletService::new(
-        &accounts_dir,
-        network_skey,
-        network_pkey,
-        network.clone(),
-        node.clone(),
-        rt.executor(),
-        genesis_hash,
-        chain_cfg,
-        cfg.node.max_inputs_in_tx,
-        epoch,
-    )?;
-    rt.spawn(wallet_service);
-
     // Start WebSocket API server.
     if cfg.general.api_endpoint != "" {
         let token_file = root_dir.join("api.token");
@@ -587,8 +571,8 @@ fn run() -> Result<(), Error> {
             api_token,
             rt.executor(),
             network.clone(),
-            wallet.clone(),
-            node.clone(),
+            None,
+            Some(node.clone()),
             version,
         )?;
     }

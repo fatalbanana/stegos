@@ -88,40 +88,12 @@ fn init(
         network_pkey.clone(),
     )?;
 
-    // Initialize blockchain
-    let (genesis, chain_cfg) = initialize_chain(&chain_name)?;
-    let genesis_hash = Hash::digest(&genesis);
-    info!("Using '{}' chain, genesis={}", chain_name, genesis_hash);
-    let timestamp = Timestamp::now();
-    let chain = Blockchain::new(
-        chain_cfg.clone(),
-        &chain_dir,
-        ConsistencyCheck::None,
-        genesis,
-        timestamp,
-    )?;
-
-    let epoch = chain.epoch();
-    // Initialize node
-    let node_cfg: NodeConfig = Default::default();
-    let (mut node_service, node) = NodeService::new(
-        node_cfg.clone(),
-        chain,
-        network_skey.clone(),
-        network_pkey.clone(),
-        network.clone(),
-        chain_name,
-        peer_id,
-        replication_rx,
-    )?;
-
     // Initialize Wallet.
     let (wallet_service, wallet) = WalletService::new(
         &accounts_dir,
         network_skey,
         network_pkey,
         network.clone(),
-        node.clone(),
         rt.executor(),
         genesis_hash,
         chain_cfg,
@@ -137,13 +109,10 @@ fn init(
         api_token,
         rt.executor(),
         network.clone(),
-        wallet.clone(),
-        node.clone(),
+        Some(wallet.clone()),
+        None,
         version,
     )?;
-
-    node_service.init().expect("shit happens");
-    rt.spawn(node_service);
 
     // Start main event loop
     rt.block_on(network_service)

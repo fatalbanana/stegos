@@ -115,7 +115,6 @@ use stegos_node::txpool::PoolJoin;
 use stegos_node::txpool::PoolNotification;
 use stegos_node::txpool::POOL_ANNOUNCE_TOPIC;
 use stegos_node::txpool::POOL_JOIN_TOPIC;
-use stegos_node::Node;
 use stegos_serialization::traits::ProtoConvert;
 use tokio_timer::{clock, Delay};
 
@@ -380,7 +379,6 @@ impl Snowball {
         account_pkey: PublicKey,
         network_pkey: pbc::PublicKey,
         network: Network,
-        _node: Node,
         facilitator: pbc::PublicKey,
         my_txins: Vec<(TXIN, UTXO)>,
         my_txouts: Vec<ProposedUTXO>,

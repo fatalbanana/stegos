@@ -30,7 +30,7 @@ mod loader;
 mod mempool;
 pub mod metrics;
 pub mod protos;
-mod replication;
+pub mod replication;
 #[doc(hidden)]
 pub mod test;
 pub mod txpool;
