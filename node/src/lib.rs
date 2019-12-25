@@ -412,13 +412,7 @@ impl NodeService {
             network: network.clone(),
         };
         let txpool_service = None;
-        let replication = Replication::new(
-            chain.epoch(),
-            chain.offset(),
-            peer_id,
-            network.clone(),
-            replication_rx,
-        );
+        let replication = Replication::new(peer_id, network.clone(), replication_rx);
 
         let service = NodeService {
             cfg,
